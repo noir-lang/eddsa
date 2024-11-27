@@ -56,10 +56,10 @@ pub fn eddsa_to_pub(secret: Field) -> (Field, Field) {
 }
 
 mod tests {
-    use std::ec::consts::te::baby_jubjub;
-    use std::ec::tecurve::affine::Point as TEPoint;
     use std::hash::poseidon::PoseidonHasher;
     use std::hash::poseidon2::Poseidon2Hasher;
+
+    use ec::{consts::te::baby_jubjub, tecurve::affine::Point as TEPoint};
 
     use super::{eddsa_to_pub, eddsa_verify};
 
