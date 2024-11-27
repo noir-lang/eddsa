@@ -1,7 +1,7 @@
 use std::default::Default;
-use std::ec::consts::te::baby_jubjub;
-use std::ec::tecurve::affine::Point as TEPoint;
 use std::hash::Hasher;
+
+use ec::{consts::te::baby_jubjub, tecurve::affine::Point as TEPoint};
 
 pub fn eddsa_verify<H>(
     pub_key_x: Field,
