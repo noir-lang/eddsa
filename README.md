@@ -4,7 +4,7 @@ A library which exports the `eddsa_verify` function which formerly existed withi
 
 ## Noir version compatibility
 
-This library is tested with all stable releases from Noir v0.36.0.
+This library is tested with all Noir stable releases from v0.36.0.
 
 ## Benchmarks
 
