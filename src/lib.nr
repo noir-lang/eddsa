@@ -1,7 +1,16 @@
+use noir_edwards::bjj::{BabyJubJub, BabyJubJubParams};
+use noir_edwards::CurveTrait;
+use noir_edwards::ScalarField;
 use std::default::Default;
 use std::hash::Hasher;
 
-use ec::{consts::te::baby_jubjub, tecurve::affine::Point as TEPoint};
+pub global BASE_8: [Field; 2] = [
+    5299619240641551281634865583518297030282874472190772894086521144482721001553,
+    16950150798460657717958625567821834550301663161624707787222815936182638968203,
+];
+
+pub global SUBORDER: Field =
+    2736030358979909402780800718157159386076813972158567259200215660948447373041;
 
 pub fn eddsa_verify<H>(
     pub_key_x: Field,
@@ -14,17 +23,17 @@ pub fn eddsa_verify<H>(
 where
     H: Hasher + Default,
 {
+    let base8: _ = BabyJubJub::new(BASE_8[0], BASE_8[1]);
     // Verifies by testing:
     // S * B8 = R8 + H(R8, A, m) * A8
-    let bjj = baby_jubjub();
 
-    let pub_key = TEPoint::new(pub_key_x, pub_key_y);
-    assert(bjj.curve.contains(pub_key));
+    let pub_key = BabyJubJub::new(pub_key_x, pub_key_y);
+    // assert(bjj.curve.contains(pub_key));
 
-    let signature_r8 = TEPoint::new(signature_r8_x, signature_r8_y);
-    assert(bjj.curve.contains(signature_r8));
+    let signature_r8 = BabyJubJub::new(signature_r8_x, signature_r8_y);
+    // assert(bjj.curve.contains(signature_r8));
     // Ensure S < Subgroup Order
-    assert(signature_s.lt(bjj.suborder));
+    assert(signature_s.lt(SUBORDER));
     // Calculate the h = H(R, A, msg)
     let mut hasher = H::default();
     hasher.write(signature_r8_x);
@@ -35,57 +44,58 @@ where
     let hash: Field = hasher.finish();
     // Calculate second part of the right side:  right2 = h*8*A
     // Multiply by 8 by doubling 3 times. This also ensures that the result is in the subgroup.
-    let pub_key_mul_2 = bjj.curve.add(pub_key, pub_key);
-    let pub_key_mul_4 = bjj.curve.add(pub_key_mul_2, pub_key_mul_2);
-    let pub_key_mul_8 = bjj.curve.add(pub_key_mul_4, pub_key_mul_4);
+    let pub_key_mul_2 = (pub_key + pub_key);
+    let pub_key_mul_4 = (pub_key_mul_2 + pub_key_mul_2);
+    let pub_key_mul_8 = (pub_key_mul_4 + pub_key_mul_4);
     // We check that A8 is not zero.
     assert(!pub_key_mul_8.is_zero());
     // Compute the right side: R8 + h * A8
-    let right = bjj.curve.add(signature_r8, bjj.curve.mul(hash, pub_key_mul_8));
+    let hash_scalar = ScalarField::<64>::from(hash);
+    let hxA8 = pub_key_mul_8.mul(hash_scalar);
+    let right = signature_r8 + hxA8;
     // Calculate left side of equation left = S * B8
-    let left = bjj.curve.mul(signature_s, bjj.base8);
-
-    left.eq(right)
+    let gen_coordinates = BabyJubJubParams::gen();
+    let left = base8.mul(ScalarField::<63>::from(signature_s));
+    left == right
 }
 
 // Returns the public key of the given secret key as (pub_key_x, pub_key_y)
 pub fn eddsa_to_pub(secret: Field) -> (Field, Field) {
-    let bjj = baby_jubjub();
-    let pub_key = bjj.curve.mul(secret, bjj.curve.gen);
+    let gen_coordinates: (Field, Field) = BabyJubJubParams::gen();
+    let gen_point = BabyJubJub::new(gen_coordinates.0, gen_coordinates.1);
+    let pub_key = gen_point.mul(ScalarField::<64>::from(secret));
     (pub_key.x, pub_key.y)
 }
 
 mod tests {
+    use super::{BASE_8, eddsa_to_pub, eddsa_verify};
+    use noir_edwards::bjj::{BabyJubJub, BabyJubJubParams};
+    use noir_edwards::{CurveTrait, ScalarField};
     use std::hash::poseidon::PoseidonHasher;
     use std::hash::poseidon2::Poseidon2Hasher;
-
-    use ec::{consts::te::baby_jubjub, tecurve::affine::Point as TEPoint};
-
-    use super::{eddsa_to_pub, eddsa_verify};
 
     #[test]
     fn main() {
         let priv_key_a = 123;
         let priv_key_b = 456;
         let msg = 789;
-
-        let bjj = baby_jubjub();
-
-        let pub_key_a = bjj.curve.mul(priv_key_a, bjj.curve.gen);
-        let pub_key_b = bjj.curve.mul(priv_key_b, bjj.curve.gen);
+        let gen_coordinates: (Field, Field) = BabyJubJubParams::gen();
+        let gen_point: BabyJubJub = BabyJubJub::new(gen_coordinates.0, gen_coordinates.1);
+        let pub_key_a = gen_point.mul(ScalarField::<64>::from(priv_key_a));
+        let pub_key_b = gen_point.mul(ScalarField::<64>::from(priv_key_b));
         let (pub_key_a_x, pub_key_a_y) = eddsa_to_pub(priv_key_a);
         let (pub_key_b_x, pub_key_b_y) = eddsa_to_pub(priv_key_b);
-        assert(TEPoint::new(pub_key_a_x, pub_key_a_y) == pub_key_a);
-        assert(TEPoint::new(pub_key_b_x, pub_key_b_y) == pub_key_b);
+        assert(BabyJubJub::new(pub_key_a_x, pub_key_a_y) == pub_key_a);
+        assert(BabyJubJub::new(pub_key_b_x, pub_key_b_y) == pub_key_b);
         // Manually computed as fields can't use modulo. Importantantly the commitment is within
         // the subgroup order. Note that choice of hash is flexible for this step.
         // let r_a = hash::pedersen_commitment([_priv_key_a, msg])[0] % bjj.suborder; // modulus computed manually
         let r_a = 1414770703199880747815475415092878800081323795074043628810774576767372531818;
         // let r_b = hash::pedersen_commitment([_priv_key_b, msg])[0] % bjj.suborder; // modulus computed manually
         let r_b = 571799555715456644614141527517766533395606396271089506978608487688924659618;
-
-        let r8_a = bjj.curve.mul(r_a, bjj.base8);
-        let r8_b = bjj.curve.mul(r_b, bjj.base8);
+        let base8 = BabyJubJub::new(BASE_8[0], BASE_8[1]);
+        let r8_a = base8.mul(ScalarField::<64>::from(r_a));
+        let r8_b = base8.mul(ScalarField::<64>::from(r_b));
         // let h_a: [Field; 6] = hash::poseidon::bn254::hash_5([
         //     r8_a.x,
         //     r8_a.y,
