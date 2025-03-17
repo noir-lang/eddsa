@@ -28,10 +28,8 @@ where
     // S * B8 = R8 + H(R8, A, m) * A8
 
     let pub_key = BabyJubJub::new(pub_key_x, pub_key_y);
-    // assert(bjj.curve.contains(pub_key));
 
     let signature_r8 = BabyJubJub::new(signature_r8_x, signature_r8_y);
-    // assert(bjj.curve.contains(signature_r8));
     // Ensure S < Subgroup Order
     assert(signature_s.lt(SUBORDER));
     // Calculate the h = H(R, A, msg)
