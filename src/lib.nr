@@ -1,7 +1,7 @@
 use noir_edwards::bjj::{BabyJubJub, BabyJubJubParams};
 use noir_edwards::CurveTrait;
-use noir_edwards::TECurveParameterTrait;
 use noir_edwards::ScalarField;
+use noir_edwards::TECurveParameterTrait;
 use std::default::Default;
 use std::hash::Hasher;
 
