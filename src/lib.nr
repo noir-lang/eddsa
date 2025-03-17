@@ -1,5 +1,6 @@
 use noir_edwards::bjj::{BabyJubJub, BabyJubJubParams};
 use noir_edwards::CurveTrait;
+use noir_edwards::TECurveParameterTrait;
 use noir_edwards::ScalarField;
 use std::default::Default;
 use std::hash::Hasher;
@@ -68,7 +69,7 @@ pub fn eddsa_to_pub(secret: Field) -> (Field, Field) {
 mod tests {
     use super::{BASE_8, eddsa_to_pub, eddsa_verify};
     use noir_edwards::bjj::{BabyJubJub, BabyJubJubParams};
-    use noir_edwards::{CurveTrait, ScalarField};
+    use noir_edwards::{CurveTrait, ScalarField, TECurveParameterTrait};
     use std::hash::poseidon::PoseidonHasher;
     use std::hash::poseidon2::Poseidon2Hasher;
 
