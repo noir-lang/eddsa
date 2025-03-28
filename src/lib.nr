@@ -1,7 +1,7 @@
+use ec::{consts::te::baby_jubjub, tecurve::affine::Point as TEPoint};
+use poseidon;
 use std::default::Default;
 use std::hash::Hasher;
-
-use ec::{consts::te::baby_jubjub, tecurve::affine::Point as TEPoint};
 
 pub fn eddsa_verify<H>(
     pub_key_x: Field,
@@ -56,8 +56,8 @@ pub fn eddsa_to_pub(secret: Field) -> (Field, Field) {
 }
 
 mod tests {
-    use std::hash::poseidon::PoseidonHasher;
-    use std::hash::poseidon2::Poseidon2Hasher;
+    use poseidon::poseidon::PoseidonHasher;
+    use poseidon::poseidon2::Poseidon2Hasher;
 
     use ec::{consts::te::baby_jubjub, tecurve::affine::Point as TEPoint};
 
@@ -128,7 +128,7 @@ fn bench_eddsa_poseidon(
     signature_r8_y: Field,
     message: Field,
 ) -> bool {
-    eddsa_verify::<std::hash::poseidon::PoseidonHasher>(
+    eddsa_verify::<poseidon::poseidon::PoseidonHasher>(
         pub_key_x,
         pub_key_y,
         signature_s,
