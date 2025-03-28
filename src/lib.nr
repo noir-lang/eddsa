@@ -80,6 +80,7 @@ mod tests {
         let msg = 789;
         let gen_coordinates: (Field, Field) = BabyJubJubParams::gen();
         let gen_point: BabyJubJub = BabyJubJub::new(gen_coordinates.0, gen_coordinates.1);
+        println(f"private_key_a: {priv_key_a}");
         let pub_key_a = gen_point.mul(ScalarField::<64>::from(priv_key_a));
         let pub_key_b = gen_point.mul(ScalarField::<64>::from(priv_key_b));
         let (pub_key_a_x, pub_key_a_y) = eddsa_to_pub(priv_key_a);
