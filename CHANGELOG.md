@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.1.2](https://github.com/noir-lang/eddsa/compare/v0.1.1...v0.1.2) (2025-03-28)
+
+
+### Features
+
+* Moved the hashing to poseidon lib instead of stdlib ([#11](https://github.com/noir-lang/eddsa/issues/11)) ([566d360](https://github.com/noir-lang/eddsa/commit/566d36074b7af73966ff735cc01cc2397e6eb5b2))
+
 ## [0.1.1](https://github.com/noir-lang/eddsa/compare/v0.1.0...v0.1.1) (2024-11-27)
 
 
