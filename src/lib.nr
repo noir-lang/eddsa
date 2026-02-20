@@ -138,7 +138,7 @@ fn bench_eddsa_poseidon(
     signature_r8_y: Field,
     message: Field,
 ) -> bool {
-    eddsa_verify::<std::hash::poseidon::PoseidonHasher>(
+    eddsa_verify::<poseidon::poseidon::PoseidonHasher>(
         pub_key_x,
         pub_key_y,
         signature_s,
