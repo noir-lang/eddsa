@@ -69,7 +69,7 @@ mod tests {
 
     use edwards::{bjj::BabyJubJub, Curve, CurveTrait, ScalarField};
 
-    use super::{eddsa_to_pub, eddsa_verify, BASE8_X, BASE8_Y};
+    use super::{BASE8_X, BASE8_Y, eddsa_to_pub, eddsa_verify};
 
     #[test]
     fn main() {
@@ -85,37 +85,25 @@ mod tests {
         assert(BabyJubJub::new(pub_key_b_x, pub_key_b_y) == pub_key_b);
         // Manually computed as fields can't use modulo. Importantly the commitment is within
         // the subgroup order. Note that choice of hash is flexible for this step.
-        let r_a =
-            1414770703199880747815475415092878800081323795074043628810774576767372531818;
-        let r_b =
-            571799555715456644614141527517766533395606396271089506978608487688924659618;
+        let r_a = 1414770703199880747815475415092878800081323795074043628810774576767372531818;
+        let r_b = 571799555715456644614141527517766533395606396271089506978608487688924659618;
 
         let base8: BabyJubJub = Curve { x: BASE8_X, y: BASE8_Y };
         let r8_a = base8.mul(ScalarField::<63>::from(r_a));
         let r8_b = base8.mul(ScalarField::<63>::from(r_b));
-        let s_a =
-            30333430637424319196043722294837632681219980330991241982145549329256671548;
-        let s_b =
-            1646085314320208098241070054368798527940102577261034947654839408482102287019;
+        let s_a = 30333430637424319196043722294837632681219980330991241982145549329256671548;
+        let s_b = 1646085314320208098241070054368798527940102577261034947654839408482102287019;
         // User A verifies their signature over the message
-        assert(
-            eddsa_verify::<PoseidonHasher>(pub_key_a.x, pub_key_a.y, s_a, r8_a.x, r8_a.y, msg),
-        );
+        assert(eddsa_verify::<PoseidonHasher>(pub_key_a.x, pub_key_a.y, s_a, r8_a.x, r8_a.y, msg));
         // User B's signature over the message can't be used with user A's pub key
-        assert(
-            !eddsa_verify::<PoseidonHasher>(pub_key_a.x, pub_key_a.y, s_b, r8_b.x, r8_b.y, msg),
-        );
+        assert(!eddsa_verify::<PoseidonHasher>(pub_key_a.x, pub_key_a.y, s_b, r8_b.x, r8_b.y, msg));
         // User A's signature over the message can't be used with another message
         assert(
-            !eddsa_verify::<PoseidonHasher>(
-                pub_key_a.x, pub_key_a.y, s_a, r8_a.x, r8_a.y, msg + 1,
-            ),
+            !eddsa_verify::<PoseidonHasher>(pub_key_a.x, pub_key_a.y, s_a, r8_a.x, r8_a.y, msg + 1),
         );
         // Using a different hash should fail
         assert(
-            !eddsa_verify::<Poseidon2Hasher>(
-                pub_key_a.x, pub_key_a.y, s_a, r8_a.x, r8_a.y, msg,
-            ),
+            !eddsa_verify::<Poseidon2Hasher>(pub_key_a.x, pub_key_a.y, s_a, r8_a.x, r8_a.y, msg),
         );
     }
 }
