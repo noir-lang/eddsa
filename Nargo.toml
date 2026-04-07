@@ -2,7 +2,7 @@
 name = "eddsa"
 type = "lib"
 authors = [""]
-compiler_version = ">=0.36.0"
+compiler_version = ">=1.0.0"
 
 [dependencies]
 edwards = { tag = "v0.2.5", git = "https://github.com/noir-lang/noir-edwards" }
